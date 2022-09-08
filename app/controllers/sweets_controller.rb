@@ -1,51 +1,21 @@
 class SweetsController < ApplicationController
-  before_action :set_sweet, only: [:show, :update, :destroy]
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
-  # GET /sweets
   def index
-    @sweets = Sweet.all
-
-    render json: @sweets
+    render json: Sweet.all
   end
 
-  # GET /sweets/1
   def show
-    render json: @sweet
-  end
-
-  # POST /sweets
-  def create
-    @sweet = Sweet.new(sweet_params)
-
-    if @sweet.save
-      render json: @sweet, status: :created, location: @sweet
-    else
-      render json: @sweet.errors, status: :unprocessable_entity
-    end
-  end
-
-  # PATCH/PUT /sweets/1
-  def update
-    if @sweet.update(sweet_params)
-      render json: @sweet
-    else
-      render json: @sweet.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /sweets/1
-  def destroy
-    @sweet.destroy
+    sweet = find_sweet
+    render json: sweet
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_sweet
-      @sweet = Sweet.find(params[:id])
+    def find_sweet
+      Sweet.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
-    def sweet_params
-      params.require(:sweet).permit(:name)
+    def render_not_found_response
+      render json: { error: "Sweet not found" }, status: :not_found
     end
 end

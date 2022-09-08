@@ -1,51 +1,21 @@
 class VendorsController < ApplicationController
-  before_action :set_vendor, only: [:show, :update, :destroy]
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
-  # GET /vendors
   def index
-    @vendors = Vendor.all
-
-    render json: @vendors
+    render json:  Vendor.all
   end
 
-  # GET /vendors/1
   def show
-    render json: @vendor
-  end
-
-  # POST /vendors
-  def create
-    @vendor = Vendor.new(vendor_params)
-
-    if @vendor.save
-      render json: @vendor, status: :created, location: @vendor
-    else
-      render json: @vendor.errors, status: :unprocessable_entity
-    end
-  end
-
-  # PATCH/PUT /vendors/1
-  def update
-    if @vendor.update(vendor_params)
-      render json: @vendor
-    else
-      render json: @vendor.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /vendors/1
-  def destroy
-    @vendor.destroy
+    vendor = find_vendor
+    render json: vendor, serialization: VendorWithSweetsSerializer
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_vendor
-      @vendor = Vendor.find(params[:id])
+    def find_vendor
+      Vendor.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
-    def vendor_params
-      params.require(:vendor).permit(:name)
+    def render_not_found_response
+      render json: { error: "Vendor not found" }, status: :not_found
     end
 end

@@ -1,51 +1,32 @@
 class VendorSweetsController < ApplicationController
-  before_action :set_vendor_sweet, only: [:show, :update, :destroy]
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
+  rescue_from ActiveRecord::RecordInvalid, with: :render_unprocessable_entity_response
 
-  # GET /vendor_sweets
-  def index
-    @vendor_sweets = VendorSweet.all
-
-    render json: @vendor_sweets
-  end
-
-  # GET /vendor_sweets/1
-  def show
-    render json: @vendor_sweet
-  end
-
-  # POST /vendor_sweets
   def create
-    @vendor_sweet = VendorSweet.new(vendor_sweet_params)
-
-    if @vendor_sweet.save
-      render json: @vendor_sweet, status: :created, location: @vendor_sweet
-    else
-      render json: @vendor_sweet.errors, status: :unprocessable_entity
-    end
+    vendor_sweet = VendorSweet.create!(vendor_sweet_params)
+    render json: vendor_sweet, status: :created
   end
 
-  # PATCH/PUT /vendor_sweets/1
-  def update
-    if @vendor_sweet.update(vendor_sweet_params)
-      render json: @vendor_sweet
-    else
-      render json: @vendor_sweet.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /vendor_sweets/1
   def destroy
-    @vendor_sweet.destroy
+    vendor_sweet = find_vendor_sweet
+    vendor_sweet.destroy
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_vendor_sweet
-      @vendor_sweet = VendorSweet.find(params[:id])
+    def find_vendor_sweet
+      VendorSweet.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
     def vendor_sweet_params
       params.require(:vendor_sweet).permit(:vendor_id, :sweet_id, :price)
+    end
+
+    def render_not_found_response
+      render json: { error: "VendorSweet not found" }, status: :not_found
+    end
+
+    def render_unprocessable_entity_response(invalid)
+      render json: { errors: invalid.record.errors.full_messages }, status: :unprocessable_entity
     end
 end
