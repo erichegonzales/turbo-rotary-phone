@@ -7,7 +7,7 @@ class VendorsController < ApplicationController
 
   def show
     vendor = find_vendor
-    render json: vendor, serialization: VendorWithSweetsSerializer
+    render json: vendor, serializer: VendorWithSweetsSerializer
   end
 
   private
